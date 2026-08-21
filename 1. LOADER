@@ -5,12 +5,12 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 -- ============================================================
--- KONFIGURASI URL SCRIPT (Biarkan kosong dulu)
+-- KONFIGURASI URL SCRIPT (Kosongkan dulu)
 -- ============================================================
 local Scripts = {
-    PLAYER = "",          -- Kosongkan dulu
-    AUTO_CLICKER = "",    -- Kosongkan dulu
-    STATUS = ""           -- Kosongkan dulu
+    NONE1 = "",
+    NONE2 = "",
+    NONE3 = ""
 }
 
 -- ============================================================
@@ -23,7 +23,6 @@ local FeatureConnections = {}
 
 local function loadFeature(url)
     if not url or url == "" then
-        warn("URL kosong atau tidak sah")
         return nil
     end
     
@@ -71,13 +70,11 @@ local function switchTab(tabName, contentFrame)
     
     local url = Scripts[tabName]
     if not url or url == "" then
-        print("Tab '" .. tabName .. "' tiada URL - contentFrame kosong")
         return
     end
     
     local featureModule = loadFeature(url)
     if not featureModule then
-        warn("Gagal memuatkan feature:", tabName)
         return
     end
     
@@ -113,8 +110,6 @@ local function switchTab(tabName, contentFrame)
             end
         }
         Features[tabName].Init(context)
-    else
-        warn("Feature module tidak mempunyai fungsi Init yang sah:", tabName)
     end
 end
 
@@ -227,15 +222,86 @@ divider.BackgroundTransparency = 0.3
 divider.BorderSizePixel = 0
 divider.Parent = frame
 
+local verticalDivider = Instance.new("Frame")
+verticalDivider.Size = UDim2.new(0, 2, 1, -50)
+verticalDivider.Position = UDim2.new(0, 170, 0, 52)
+verticalDivider.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+verticalDivider.BackgroundTransparency = 0.5
+verticalDivider.BorderSizePixel = 0
+verticalDivider.Parent = frame
+
 -- ============================================================
--- CONTENT FRAME (Full width, tanpa sidebar)
+-- SIDEBAR TABS (Perkataan ditukar kepada "NONE")
+-- ============================================================
+local function createTabButton(text, yPosition, icon)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Size = UDim2.new(0, 145, 0, 40)
+    tabButton.Position = UDim2.new(0, 12, 0, yPosition)
+    tabButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    tabButton.BackgroundTransparency = 0.1
+    tabButton.Text = "  " .. icon .. "  " .. text
+    tabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    tabButton.TextSize = 14
+    tabButton.Font = Enum.Font.SourceSansBold
+    tabButton.TextXAlignment = Enum.TextXAlignment.Left
+    tabButton.BorderSizePixel = 0
+    tabButton.AutoButtonColor = false
+    tabButton.Parent = frame
+    
+    local tabCorner = Instance.new("UICorner")
+    tabCorner.CornerRadius = UDim.new(0, 12)
+    tabCorner.Parent = tabButton
+    
+    return tabButton
+end
+
+-- Tukar perkataan kepada "NONE"
+local tab1 = createTabButton("NONE", 60, "⬜")
+local tab2 = createTabButton("NONE", 108, "⬜")
+local tab3 = createTabButton("NONE", 156, "⬜")
+
+-- ============================================================
+-- CONTENT FRAME
 -- ============================================================
 local contentFrame = Instance.new("Frame")
-contentFrame.Size = UDim2.new(1, -20, 1, -70)  -- Full width dengan padding
-contentFrame.Position = UDim2.new(0, 10, 0, 60)  -- Kiri ada padding 10
+contentFrame.Size = UDim2.new(1, -185, 1, -70)
+contentFrame.Position = UDim2.new(0, 175, 0, 60)
 contentFrame.BackgroundTransparency = 1
 contentFrame.BorderSizePixel = 0
 contentFrame.Parent = frame
+
+-- ============================================================
+-- TAB SWITCHING & HIGHLIGHT
+-- ============================================================
+local function updateTabs(activeTab)
+    local tabs = {tab1, tab2, tab3}
+    for _, tab in pairs(tabs) do
+        if tab == activeTab then
+            tab.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+            tab.TextColor3 = Color3.fromRGB(255, 255, 255)
+        else
+            tab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+            tab.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+    end
+end
+
+local function onTabClick(tabName)
+    updateTabs(tabName == "NONE1" and tab1 or tabName == "NONE2" and tab2 or tab3)
+    switchTab(tabName, contentFrame)
+end
+
+tab1.MouseButton1Click:Connect(function()
+    onTabClick("NONE1")
+end)
+
+tab2.MouseButton1Click:Connect(function()
+    onTabClick("NONE2")
+end)
+
+tab3.MouseButton1Click:Connect(function()
+    onTabClick("NONE3")
+end)
 
 -- ============================================================
 -- DRAG SYSTEM
@@ -379,7 +445,4 @@ closeButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- ============================================================
--- LOAD DEFAULT (Kosong - tiada tab)
--- ============================================================
-print("KH HUB Loaded - Tiada tab, contentFrame kosong")
+print("KH HUB Loaded - Sidebar dengan perkataan NONE")
