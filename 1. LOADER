@@ -5,12 +5,10 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 -- ============================================================
--- KONFIGURASI URL SCRIPT (Kosongkan dulu)
+-- KONFIGURASI URL SCRIPT
 -- ============================================================
 local Scripts = {
-    NONE1 = "",
-    NONE2 = "",
-    NONE3 = ""
+    STATUS = "https://raw.githubusercontent.com/Nie1Cem/roblox-script-strength-per-click/main/StatusFeature.lua"
 }
 
 -- ============================================================
@@ -23,6 +21,7 @@ local FeatureConnections = {}
 
 local function loadFeature(url)
     if not url or url == "" then
+        warn("URL kosong atau tidak sah")
         return nil
     end
     
@@ -69,12 +68,14 @@ local function switchTab(tabName, contentFrame)
     CurrentTab = tabName
     
     local url = Scripts[tabName]
-    if not url or url == "" then
+    if not url then
+        warn("Tiada URL untuk tab:", tabName)
         return
     end
     
     local featureModule = loadFeature(url)
     if not featureModule then
+        warn("Gagal memuatkan feature:", tabName)
         return
     end
     
@@ -110,6 +111,8 @@ local function switchTab(tabName, contentFrame)
             end
         }
         Features[tabName].Init(context)
+    else
+        warn("Feature module tidak mempunyai fungsi Init yang sah:", tabName)
     end
 end
 
@@ -231,7 +234,7 @@ verticalDivider.BorderSizePixel = 0
 verticalDivider.Parent = frame
 
 -- ============================================================
--- SIDEBAR TABS (Perkataan ditukar kepada "NONE")
+-- SIDEBAR TABS (Hanya SATU tab - STATUS)
 -- ============================================================
 local function createTabButton(text, yPosition, icon)
     local tabButton = Instance.new("TextButton")
@@ -255,10 +258,8 @@ local function createTabButton(text, yPosition, icon)
     return tabButton
 end
 
--- Tukar perkataan kepada "NONE"
-local tab1 = createTabButton("NONE", 60, "⬜")
-local tab2 = createTabButton("NONE", 108, "⬜")
-local tab3 = createTabButton("NONE", 156, "⬜")
+-- Hanya SATU tab - STATUS
+local statusTab = createTabButton("STATUS", 60, "📊")
 
 -- ============================================================
 -- CONTENT FRAME
@@ -274,33 +275,22 @@ contentFrame.Parent = frame
 -- TAB SWITCHING & HIGHLIGHT
 -- ============================================================
 local function updateTabs(activeTab)
-    local tabs = {tab1, tab2, tab3}
-    for _, tab in pairs(tabs) do
-        if tab == activeTab then
-            tab.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-            tab.TextColor3 = Color3.fromRGB(255, 255, 255)
-        else
-            tab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-            tab.TextColor3 = Color3.fromRGB(200, 200, 200)
-        end
+    if activeTab == statusTab then
+        statusTab.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        statusTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        statusTab.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        statusTab.TextColor3 = Color3.fromRGB(200, 200, 200)
     end
 end
 
 local function onTabClick(tabName)
-    updateTabs(tabName == "NONE1" and tab1 or tabName == "NONE2" and tab2 or tab3)
+    updateTabs(statusTab)
     switchTab(tabName, contentFrame)
 end
 
-tab1.MouseButton1Click:Connect(function()
-    onTabClick("NONE1")
-end)
-
-tab2.MouseButton1Click:Connect(function()
-    onTabClick("NONE2")
-end)
-
-tab3.MouseButton1Click:Connect(function()
-    onTabClick("NONE3")
+statusTab.MouseButton1Click:Connect(function()
+    onTabClick("STATUS")
 end)
 
 -- ============================================================
@@ -445,4 +435,7 @@ closeButton.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
-print("KH HUB Loaded - Sidebar dengan perkataan NONE")
+-- ============================================================
+-- LOAD DEFAULT TAB (STATUS)
+-- ============================================================
+onTabClick("STATUS")
