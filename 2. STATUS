@@ -1,0 +1,226 @@
+-- STATUS FEATURE
+local Feature = {}
+
+local contentFrame
+local player
+local addConnection
+
+local function clearContent()
+    for _, child in pairs(contentFrame:GetChildren()) do
+        pcall(function() child:Destroy() end)
+    end
+end
+
+local function getPlayerStat(statName)
+    local character = player.Character
+    if not character then return "N/A" end
+    
+    -- Cari dalam player
+    local stat = player:FindFirstChild(statName)
+    if stat then
+        return tostring(stat.Value or stat)
+    end
+    
+    -- Cari dalam leaderstats
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats then
+        local statValue = leaderstats:FindFirstChild(statName)
+        if statValue then
+            return tostring(statValue.Value)
+        end
+    end
+    
+    -- Cari dalam character
+    local charStat = character:FindFirstChild(statName)
+    if charStat then
+        return tostring(charStat.Value or charStat)
+    end
+    
+    -- Cari attribute
+    local attr = player:GetAttribute(statName)
+    if attr then
+        return tostring(attr)
+    end
+    
+    return "N/A"
+end
+
+local function createStatusRow(icon, label, yPosition)
+    local rowContainer = Instance.new("Frame")
+    rowContainer.Size = UDim2.new(1, -20, 0, 55)
+    rowContainer.Position = UDim2.new(0, 10, 0, yPosition)
+    rowContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    rowContainer.BackgroundTransparency = 0.3
+    rowContainer.BorderSizePixel = 0
+    rowContainer.Parent = contentFrame
+    
+    local rowCorner = Instance.new("UICorner")
+    rowCorner.CornerRadius = UDim.new(0, 10)
+    rowCorner.Parent = rowContainer
+    
+    -- Icon
+    local iconLabel = Instance.new("TextLabel")
+    iconLabel.Size = UDim2.new(0, 40, 0, 40)
+    iconLabel.Position = UDim2.new(0, 10, 0, 7)
+    iconLabel.BackgroundTransparency = 1
+    iconLabel.Text = icon
+    iconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    iconLabel.TextSize = 22
+    iconLabel.Font = Enum.Font.SourceSans
+    iconLabel.Parent = rowContainer
+    
+    -- Label
+    local labelText = Instance.new("TextLabel")
+    labelText.Size = UDim2.new(0, 100, 0, 40)
+    labelText.Position = UDim2.new(0, 55, 0, 7)
+    labelText.BackgroundTransparency = 1
+    labelText.Text = label
+    labelText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    labelText.TextSize = 16
+    labelText.Font = Enum.Font.SourceSansBold
+    labelText.TextXAlignment = Enum.TextXAlignment.Left
+    labelText.Parent = rowContainer
+    
+    -- Value
+    local valueText = Instance.new("TextLabel")
+    valueText.Size = UDim2.new(0, 200, 0, 40)
+    valueText.Position = UDim2.new(1, -210, 0, 7)
+    valueText.BackgroundTransparency = 1
+    valueText.Text = "Loading..."
+    valueText.TextColor3 = Color3.fromRGB(0, 170, 255)
+    valueText.TextSize = 18
+    valueText.Font = Enum.Font.SourceSansBold
+    valueText.TextXAlignment = Enum.TextXAlignment.Right
+    valueText.Parent = rowContainer
+    
+    return rowContainer, valueText
+end
+
+function Feature.Init(context)
+    contentFrame = context.ContentFrame
+    player = context.Player
+    addConnection = context.AddConnection
+    
+    clearContent()
+    
+    -- Title
+    local statusTitle = Instance.new("TextLabel")
+    statusTitle.Size = UDim2.new(1, -20, 0, 45)
+    statusTitle.Position = UDim2.new(0, 10, 0, 5)
+    statusTitle.BackgroundTransparency = 1
+    statusTitle.Text = "📊 PLAYER STATUS"
+    statusTitle.TextColor3 = Color3.fromRGB(0, 170, 255)
+    statusTitle.TextSize = 22
+    statusTitle.Font = Enum.Font.SourceSansBold
+    statusTitle.TextXAlignment = Enum.TextXAlignment.Center
+    statusTitle.Parent = contentFrame
+    
+    -- Garisan bawah title
+    local titleDivider = Instance.new("Frame")
+    titleDivider.Size = UDim2.new(0.5, 0, 0, 2)
+    titleDivider.Position = UDim2.new(0.25, 0, 0, 52)
+    titleDivider.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    titleDivider.BackgroundTransparency = 0.5
+    titleDivider.BorderSizePixel = 0
+    titleDivider.Parent = contentFrame
+    
+    -- Status rows
+    local rebirthRow, rebirthValue = createStatusRow("🔄", "REBIRTH", 65)
+    local strengthRow, strengthValue = createStatusRow("💪", "STRENGTH", 125)
+    local levelRow, levelValue = createStatusRow("⭐", "LEVEL", 185)
+    local winsRow, winsValue = createStatusRow("🏆", "WINS", 245)
+    
+    -- Player Name
+    local playerNameRow = Instance.new("Frame")
+    playerNameRow.Size = UDim2.new(1, -20, 0, 40)
+    playerNameRow.Position = UDim2.new(0, 10, 0, 310)
+    playerNameRow.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    playerNameRow.BackgroundTransparency = 0.3
+    playerNameRow.BorderSizePixel = 0
+    playerNameRow.Parent = contentFrame
+    
+    local playerNameCorner = Instance.new("UICorner")
+    playerNameCorner.CornerRadius = UDim.new(0, 10)
+    playerNameCorner.Parent = playerNameRow
+    
+    local playerNameLabel = Instance.new("TextLabel")
+    playerNameLabel.Size = UDim2.new(1, -20, 0, 30)
+    playerNameLabel.Position = UDim2.new(0, 10, 0, 5)
+    playerNameLabel.BackgroundTransparency = 1
+    playerNameLabel.Text = "👤 " .. player.Name
+    playerNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    playerNameLabel.TextSize = 16
+    playerNameLabel.Font = Enum.Font.SourceSansBold
+    playerNameLabel.TextXAlignment = Enum.TextXAlignment.Center
+    playerNameLabel.Parent = playerNameRow
+    
+    local function updateStats()
+        local rebirth = getPlayerStat("Rebirth") or getPlayerStat("Rebirths") or getPlayerStat("RebirthCount")
+        local strength = getPlayerStat("Strength") or getPlayerStat("STR")
+        local level = getPlayerStat("Level") or getPlayerStat("LVL") or getPlayerStat("LV")
+        local wins = getPlayerStat("Wins") or getPlayerStat("Win") or getPlayerStat("WinCount")
+        
+        -- Format numbers
+        rebirthValue.Text = rebirth ~= "N/A" and tostring(rebirth) or "N/A"
+        strengthValue.Text = strength ~= "N/A" and tostring(strength) or "N/A"
+        levelValue.Text = level ~= "N/A" and tostring(level) or "N/A"
+        winsValue.Text = wins ~= "N/A" and tostring(wins) or "N/A"
+        
+        -- Color based on value (optional)
+        if tonumber(rebirth) and tonumber(rebirth) > 0 then
+            rebirthValue.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold
+        else
+            rebirthValue.TextColor3 = Color3.fromRGB(150, 150, 150)
+        end
+        
+        if tonumber(strength) and tonumber(strength) > 100 then
+            strengthValue.TextColor3 = Color3.fromRGB(255, 100, 100) -- Red
+        else
+            strengthValue.TextColor3 = Color3.fromRGB(0, 170, 255)
+        end
+        
+        if tonumber(level) and tonumber(level) > 50 then
+            levelValue.TextColor3 = Color3.fromRGB(0, 255, 100) -- Green
+        else
+            levelValue.TextColor3 = Color3.fromRGB(0, 170, 255)
+        end
+        
+        if tonumber(wins) and tonumber(wins) > 100 then
+            winsValue.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold
+        else
+            winsValue.TextColor3 = Color3.fromRGB(0, 170, 255)
+        end
+    end
+    
+    -- Update stats setiap 0.5 saat
+    local updaterConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        updateStats()
+    end)
+    
+    addConnection("STATUS", updaterConnection)
+    
+    -- Update immediately
+    updateStats()
+    
+    -- Also update when leaderstats change
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats then
+        local conn = leaderstats:GetPropertyChangedSignal("Value"):Connect(function()
+            updateStats()
+        end)
+        addConnection("STATUS", conn)
+    end
+    
+    print("STATUS FEATURE LOADED")
+end
+
+function Feature.Destroy()
+    print("STATUS FEATURE DESTROYED")
+    if contentFrame then
+        for _, child in pairs(contentFrame:GetChildren()) do
+            pcall(function() child:Destroy() end)
+        end
+    end
+end
+
+return Feature
