@@ -8,7 +8,7 @@ local TweenService = game:GetService("TweenService")
 -- KONFIGURASI URL SCRIPT
 -- ============================================================
 local Scripts = {
-    STATUS = "https://raw.githubusercontent.com/Nie1Cem/roblox-script-strength-per-click/main/StatusFeature.lua"
+    STATUS = "https://raw.githubusercontent.com/Nie1Cem/Roblox-Script/cd43b37cc3da1d43efb08036268c327f6a05ad0e/2.%20STATUS"
 }
 
 -- ============================================================
